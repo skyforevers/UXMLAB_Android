@@ -44,39 +44,39 @@ import java.util.List;
 * 로그인 후 강좌 list를 보여주기 위한 클래스
 * 내 강좌와 전체 강좌로 나누어서 확인한다
 */
-    public class CourseListActivity extends AppCompatActivity {
-        private DefaultHttpClient httpClient;
-        private HttpPost httpPost;
-        private ArrayList<NameValuePair> nameValuePairArrayList;
-        private ListView myCourseListView;
-        private ListView allCourseListView;
-        private MenuAdapter menuAdapter;
-        private MenuAdapter failedAdapter;
-        private List<MenuItem> menuItemListAll;
-        private List<MenuItem> menuItemListMyCourse;
-        private Button add_course_btn;
-        private GlobalIdApplication idApp;
+public class CourseListActivity extends AppCompatActivity {
+    private DefaultHttpClient httpClient;
+    private HttpPost httpPost;
+    private ArrayList<NameValuePair> nameValuePairArrayList;
+    private ListView myCourseListView;
+    private ListView allCourseListView;
+    private MenuAdapter menuAdapter;
+    private MenuAdapter failedAdapter;
+    private List<MenuItem> menuItemListAll;
+    private List<MenuItem> menuItemListMyCourse;
+    private Button add_course_btn;
+    private GlobalIdApplication idApp;
 
 
     /**/
-    private void setCourse(String response, String course, List<MenuItem> listCourse, ListView listView) throws Exception{
+    private void setCourse(String response, String course, List<MenuItem> listCourse, ListView listView, MenuAdapter adapter) throws Exception {
         JSONArray jsonArray = new JSONObject(response).getJSONArray(course);
-        for(int i = 0; i < jsonArray.length(); i++){
+        for (int i = 0; i < jsonArray.length(); i++) {
             JSONObject jsonObject = jsonArray.getJSONObject(i);
             String course_no = jsonObject.optString("course_no");
             String course_name = jsonObject.optString("course_name");
             String professor = jsonObject.optString("professor");
             listCourse.add(new MenuItem(course_no, course_name, professor));
         }
-        menuAdapter = new MenuAdapter(getApplicationContext(), listCourse);
-        listView.setAdapter(menuAdapter);
+        adapter = new MenuAdapter(getApplicationContext(), listCourse);
+        listView.setAdapter(adapter);
         setListViewHeightBaseOnChildren(listView);
-}
+    }
 
     private void initUI() {
         idApp = (GlobalIdApplication) getApplication();
         add_course_btn = (Button) findViewById(R.id.add_course_btn);
-        if(idApp.getIsStudent()==false){
+        if (idApp.getIsStudent() == false) {
             add_course_btn.setVisibility(View.VISIBLE);
         }
         myCourseListView = (ListView) findViewById(R.id.listview_my_course);
@@ -99,17 +99,19 @@ import java.util.List;
             ResponseHandler<String> responseHandler = new BasicResponseHandler();
             final String response = httpClient.execute(httpPost, responseHandler);
             int check_my_course = new JSONObject(response).optInt("my_course");
-            if(check_my_course==1){
+            if (check_my_course == 1) {
                 setCourse(response,
                         "course",
                         menuItemListMyCourse,
-                        myCourseListView);
+                        myCourseListView,
+                        menuAdapter);
                 /* */
                 setCourse(response,
                         "all_course",
                         menuItemListAll,
-                        allCourseListView);
-            } else if(check_my_course==0){
+                        allCourseListView,
+                        menuAdapter);
+            } else if (check_my_course == 0) {
                 final List<MenuItem> menu_itemList2 = new ArrayList<>();
                 runOnUiThread(new Runnable() {
                     @Override
@@ -123,8 +125,9 @@ import java.util.List;
 
 
                 menuItemListMyCourse = new ArrayList<>();
+
                 JSONArray jsonArray2 = new JSONObject(response).getJSONArray("all_course");
-                for(int i = 0; i < jsonArray2.length(); i++){
+                for (int i = 0; i < jsonArray2.length(); i++) {
                     JSONObject jsonObject = jsonArray2.getJSONObject(i);
                     String course_no = jsonObject.optString("course_no");
                     String course_name = jsonObject.optString("course_name");
@@ -151,39 +154,38 @@ import java.util.List;
                     showRegisterCourse(String.valueOf(menuItemListMyCourse.get(i).getCourse_no()));
                 }
             });
-        } catch (Exception e){
+        } catch (Exception e) {
 
         }
     }
 
-    public void clickAddCourse(View view)
-    {
+    public void clickAddCourse(View view) {
         Intent intent = new Intent(this, AddCourseActivity.class);
         startActivity(intent);
     }
 
     /* UI for responsive */
-    public void setListViewHeightBaseOnChildren(ListView listView){
+    public void setListViewHeightBaseOnChildren(ListView listView) {
         ListAdapter listAdapter = listView.getAdapter();
-        if(listAdapter==null){
+        if (listAdapter == null) {
             return;
         }
 
         int totalHeight = 0;
 
-        for(int i = 0; i < listAdapter.getCount(); i++){
+        for (int i = 0; i < listAdapter.getCount(); i++) {
             View listItem = listAdapter.getView(i, null, listView);
             listItem.measure(0, 0);
             totalHeight += listItem.getMeasuredHeight();
         }
 
         ViewGroup.LayoutParams params = listView.getLayoutParams();
-        params.height = totalHeight + (listView.getDividerHeight() * (listAdapter.getCount()-1));
+        params.height = totalHeight + (listView.getDividerHeight() * (listAdapter.getCount() - 1));
         listView.setLayoutParams(params);
         listView.requestLayout();
     }
 
-    public void showRegisterCourse(final String course_no){
+    public void showRegisterCourse(final String course_no) {
         AlertDialog.Builder alert = new AlertDialog.Builder(this);
 
         alert.setTitle("강의 등록");
@@ -209,8 +211,8 @@ import java.util.List;
         alert.show();
     }
 
-    public void findKey(String course_key, String course_no){
-        class findData extends AsyncTask<String, Void, String>{
+    public void findKey(String course_key, String course_no) {
+        class findData extends AsyncTask<String, Void, String> {
             @Override
             protected String doInBackground(String... strings) {
                 try {
@@ -221,8 +223,8 @@ import java.util.List;
 
                     String link = Constants.linkHTTP + Constants.courseRegister;
                     String data = URLEncoder.encode("course_key", "UTF-8") + "=" + URLEncoder.encode(course_key, "UTF-8");
-                    data += "&"+URLEncoder.encode("course_no", "UTF-8")+"="+URLEncoder.encode(course_no, "UTF-8");
-                    data += "&"+URLEncoder.encode("id", "UTF-8")+"="+URLEncoder.encode(id, "UTF-8");
+                    data += "&" + URLEncoder.encode("course_no", "UTF-8") + "=" + URLEncoder.encode(course_no, "UTF-8");
+                    data += "&" + URLEncoder.encode("id", "UTF-8") + "=" + URLEncoder.encode(id, "UTF-8");
 
                     URL url = new URL(link);
                     URLConnection conn = url.openConnection();
@@ -238,24 +240,24 @@ import java.util.List;
                     StringBuilder sb = new StringBuilder();
                     String line = null;
 
-                    while((line = reader.readLine())!=null){
+                    while ((line = reader.readLine()) != null) {
                         sb.append(line);
                         break;
                     }
                     return sb.toString();
-                } catch(Exception e){
-                    return new String("Exception: "+e.getMessage());
+                } catch (Exception e) {
+                    return new String("Exception: " + e.getMessage());
                 }
             }
 
             @Override
-            protected void onPostExecute(String s){
+            protected void onPostExecute(String s) {
                 super.onPostExecute(s);
-                if(s.equals("failed")){  //키가 틀린 경우
+                if (s.equals("failed")) {  //키가 틀린 경우
                     Toast.makeText(getApplicationContext(), "key가 올바르지 않습니다.", Toast.LENGTH_SHORT).show();
-                } else if(s.equals("success")){ // insert 성공한 경우
+                } else if (s.equals("success")) { // insert 성공한 경우
                     Toast.makeText(getApplicationContext(), "성공적으로 등록되었습니다.", Toast.LENGTH_SHORT).show();
-                } else if(s.equals("failure")){ // 키는 맞았지만 insert가 되지 않은 경우
+                } else if (s.equals("failure")) { // 키는 맞았지만 insert가 되지 않은 경우
                     Toast.makeText(getApplicationContext(), "강의가 등록되지 않았습니다.", Toast.LENGTH_SHORT).show();
                 }
             }

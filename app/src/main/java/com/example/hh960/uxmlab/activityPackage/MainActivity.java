@@ -129,7 +129,7 @@ public class MainActivity extends AppCompatActivity {
             System.out.println("Response : " + response);
 
             /*
-
+            로그인 체크
             */
             checkLogin(response);
         }

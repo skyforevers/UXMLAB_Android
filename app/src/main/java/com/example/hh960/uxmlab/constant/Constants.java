@@ -21,4 +21,6 @@ public class Constants {
     public static final String readBoard = "uxmlab_read_board.php";
     public static final String writeBoard = "uxmlab_write_board.php";
 
+    public static final String assignmentQuery = "query.php";
+
 }
